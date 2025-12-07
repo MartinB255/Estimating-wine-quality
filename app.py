@@ -66,6 +66,6 @@ if st.button("Predict Quality"):
         emoji = '🤩'
 
     st.success(f"Predicted Quality: **{rounded}/8** {emoji}")
-    st.info(f"Raw prediction (model): {raw_pred:.3f}")
+    #st.info(f"Raw prediction (model): {raw_pred:.3f}")
     if t_min is None:
         st.warning('Training target range not found; result was clamped to 3–8. For smoother scaling, save training range as target_range.json from your notebook.')
