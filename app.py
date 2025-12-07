@@ -38,14 +38,20 @@ if st.button("Predict Quality"):
     df_scaled = deeper_scaler.transform(df)
     raw_pred = mlp.predict(df_scaled)[0]
 
-    # Rescale/cap prediction into desired output range (3-8)
+    # Desired output range
     out_min, out_max = 3.0, 8.0
-    if t_min is not None and t_max is not None and t_max != t_min:
-        # min-max rescale from training target range to out_min/out_max
-        raw_rescaled = (raw_pred - t_min) / (t_max - t_min) * (out_max - out_min) + out_min
-    else:
-        # fallback: clamp into [out_min, out_max]
+    # If `target_range.json` exists (t_min/t_max loaded), that means we trained
+    # a model whose target was rescaled to the 3-8 interval (train_rescaled.py).
+    # In that case the model's raw prediction is already in 3-8 and we should
+    # NOT perform an additional min-max mapping. Just clamp to be safe.
+    if t_min is not None and t_max is not None:
         raw_rescaled = max(out_min, min(out_max, float(raw_pred)))
+    else:
+        # fallback: assume model predicts in original target scale and rescale
+        if t_min is not None and t_max is not None and t_max != t_min:
+            raw_rescaled = (raw_pred - t_min) / (t_max - t_min) * (out_max - out_min) + out_min
+        else:
+            raw_rescaled = max(out_min, min(out_max, float(raw_pred)))
 
     rounded = int(np.round(raw_rescaled))
     rounded = max(int(out_min), min(int(out_max), rounded))
